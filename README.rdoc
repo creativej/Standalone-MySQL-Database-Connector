@@ -79,10 +79,10 @@ Easily extendable:
 	$products = $product_model->all();
 	
 == More to come
-Use of OR statement for querying.
-Support complex queries
-Support databse other than MySQL
-INSERT, UPDATE, DELETE support
+* Use of OR statement for querying.
+* Support complex queries
+* Support databse other than MySQL
+* INSERT, UPDATE, DELETE support
 
 		
 

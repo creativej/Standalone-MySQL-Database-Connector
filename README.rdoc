@@ -10,7 +10,7 @@ Sometimes I just feel like reinventing the wheels. =]
  
 == Features
 
-* Standalone only one file usage
+* Standalone requires single file only
 * Converts all records into object for easy access e.g. product->name
 * Simplifies mysql query - e.g. $db->get_products->all()
 
@@ -82,7 +82,7 @@ Easily extendable:
 == More to come
 * Support the user of OR, LIKE statement for querying.
 * Support complex queries
-* Support databse other than MySQL
+* Support database other than MySQL
 * INSERT, UPDATE, DELETE support
 
 		

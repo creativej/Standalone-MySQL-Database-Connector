@@ -1,0 +1,53 @@
+= Standalone Database Connector
+
+An abstract layer for database connection, and simple data querying. 
+
+
+Note: I do not advise to use this for production purpose because there are many database class out there that can do more and better things than this class. 
+
+This is just a small experienment/excuse for myself to play around with the PHP magic method and mysqli. 
+ 
+== Features
+
+* Standalone only one file usage
+* Converts all records into object for easy access e.g. product->name
+* Simplifies mysql query - e.g. $db->get_products->all()
+
+== Usage
+
+Setup database: 
+
+	require_once 'database.php';
+
+	$config['host'] 	= 'localhost';
+	$config['useranme'] 	= 'admin';
+	$config['password'] 	= 'admin';
+	$config['database']	= 'database';
+
+	$db = new Database($config);
+
+Get model
+	//Name convention in getting products model: $db->get_{tablename}
+	$products_model = $db->get_products;
+
+Get all products:
+	$products = $products_model->all();
+
+	foreach($products as $product){
+   		echo $product->name.'<br/>';
+	}
+
+	//More options
+	$order	= 'name asc';
+	$offset	= 0;
+	$limit	= 25;
+	$products = $products_model->all($order, $offset, $limit);
+	
+Get By fields
+	$products = $products_model->by_id(23);
+
+	foreach($products as $product){
+		echo $product->name.'<br/>';
+	}
+
+	

@@ -2,6 +2,6 @@
 $config['host']        = 'localhost'; 
 $config['username']    = 'admin'; 
 $config['password']    = 'admin'; 
-$config['database']    = 'myvideos'; 
+$config['database']    = 'streetdancevideos'; 
 $config['port']        = 3306; 
 ?>

@@ -1,5 +1,12 @@
 <?php
+/**
+ * Standalone database connector
+ *
+ * @author		Jamison Lu
+ * 
+ */
 class Database{
+    //Default config setting
     var $config = array(
         'host' => 'localhost',
         'port' => 3306
@@ -12,9 +19,11 @@ class Database{
     //Query settings
     var $limit  = 25;
     var $offset = 0;
-    var $order  = "'id' ASC";
+    var $order  = "`id` ASC";
     
     var $models = array();
+    
+    //************************ Public functions ****************************//
     
     /**
      * Constructor
@@ -24,84 +33,26 @@ class Database{
     }
     
     /*
-     * Establish and store database connection
+     * Dynamic method to handle all calls
      */
-    public function connect(){
-        //Use default database authentication
-        require 'config/database.php';
-        
-	//Establish connection
-        $this->mysqli = new mysqli( 
-                           $config['host'],  
-                           $config['username'],  
-                           $config['password'], 
-                           $config['database'], 
-                           $config['port'] 
-                           ); 
-
-        $this->throwExceptionOnError();
-    }
-    
-    public function get($where, $order = '', $limit = '', $offset = ''){
-        if(empty($order)){
-            $order = $this->order;
-        }
-
-        if(empty($limit)){
-            $limit = $this->limit;
-        }        
-        
-        if(empty($offset)){
-            $offset = $this->offset;
-        }
-        
-        if(!empty($where)){
-            $where = "WHERE $where";
-        }
-        
-        $query = "SELECT * FROM `$this->table_name` $where ORDER BY $order LIMIT $offset, $limit";
-
-        if($this->debug_mode){
-            echo $query.'<br/>';
-        }
-        
-        return $this->query_result($query);
-    }
-    
     public function __call($name, $augments){
         if(!empty($this->table_name)){
-            //Make sure the naming convention is correct
-            if(preg_match('/by_/', $name)){
-                $raw_fields = preg_replace('/by_(.*)/', '$1', $name); 
-
-                if(empty($raw_fields)){
-                    //
-                    return NULL;
-                }else{
-                    $fields = explode('_AND_', $raw_fields);
-
-                    $where = '';
-                    $count = 0;
-
-                    foreach($fields as $field){
-                        if($count > 0){
-                            $where .= ' AND ';
-                        }
-
-                        $where .= "$field = '$augments[$count]'";
-
-                        $count++;
-                    }
-
-                    return $this->get($where);
-                }
+            //Handles $this->by_{fields}          
+            if($result = $this->find('by_', $name, $augments)){
+                return $result;
+            }            
+            
+            //Handles $this->first_by_{fields}
+            if($result = $this->find('first_by_', $name, $augments, true)){
+                return $result;
             }
             
+            //Get all record
             if(preg_match('/all/', $name)){
                 return $this->get('', $augments[0], $augments[1], $augments[2]);
             }
             
-            return array();
+            return NULL;
         }else{
             return NULL;
         }
@@ -111,10 +62,12 @@ class Database{
      * Get table model
      */
     public function __get($name){
-        //If this is a generic database class
+        //Make sure this is a generic database class
+        //and the naming convention is used
         if(empty($this->table_name) && preg_match('/get_/', $name)){
             $table_name = preg_replace('/get_(.*)/', '$1', $name);
             
+            //Check to see if a model exist already
             if( empty( $this->models[$table_name] ) ){
                 //Contruct model using a new database connection 
                 $model  = new Database($this->config);
@@ -131,6 +84,43 @@ class Database{
         
         return NULL;
     }
+    
+    /*
+     * Generic method for retrieving data
+     */
+    public function get($where = '', $order = '', $limit = '', $offset = ''){
+        //Format values
+        $this->get_value(&$order, $this->order);
+        $this->get_value(&$limit, $this->limit);
+        $this->get_value(&$offset, $this->offset);
+        
+        $query = "SELECT * FROM `$this->table_name` $where ORDER BY $order LIMIT $offset, $limit";
+
+        //Outputs query for debug purpose
+        if($this->debug_mode){
+            echo $query.'<br/>';
+        }
+        
+        return $this->query_result($query);
+    }   
+    
+    //************************ Protected functions ****************************//
+
+    /*
+     * Establish and store database connection
+     */
+    protected function connect(){       
+	//Establish connection
+        $this->mysqli = new mysqli( 
+                           $this->config['host'],  
+                           $this->config['username'],  
+                           $this->config['password'], 
+                           $this->config['database'], 
+                           $this->config['port']
+                           ); 
+
+        $this->throwExceptionOnError();
+    }     
     
     /*
      * Prepare database query
@@ -220,7 +210,86 @@ class Database{
         //Return list of rows/records
         return $rows;
     }
+    
+    /*
+     * Dynamically contruct MySQL where statement
+     */
+    protected function contruct_where($raw_fields, $augments, $max_augments){
+        $fields = explode('_AND_', $raw_fields);
+
+        $where = 'WHERE ';
+        $count = 0;
         
+        foreach($fields as $field){
+            if($count > 0){
+                $where .= ' AND ';
+            }
+            
+            $where .= "$field = '$augments[$count]'";
+
+            $count++;
+        }
+        
+        //Store the maximum augments for getting order, offest, limit
+        $max_augments = $count + 3;
+        
+        return $where;
+    }
+    
+    /*
+     * Query and return result
+     */
+    protected function find($filter, $name, $augments, $single_record = false){       
+        //Make sure the naming convention is correct
+        if(preg_match('/^'.$filter.'/', $name)){
+            $raw_fields = preg_replace('/^'.$filter.'(.*)/', '$1', $name); 
+
+            $result = array();
+
+            //Make sure there are fields specified
+            if(!empty($raw_fields)){
+                $max_augments = 0;
+                
+                $where = $this->contruct_where($raw_fields, $augments, &$max_augments);
+                
+                $order      = $augments[$max_augments - 3];
+                $limit      = $augments[$max_augments - 2];
+                $offset     = $augments[$max_augments - 1];                
+
+                //Query one record only
+                if($single_record){
+                    $limit = 1;
+                }                
+                
+                $result = $this->get($where, $order, $limit, $offset);
+            }
+            
+            if($single_record){
+                //Make sure there are results
+                if(sizeof($result) > 0){
+                    //return single record
+                    return $result[0];
+                }else{
+                    //returns empty class;
+                    return new stdClass;
+                }
+            }else{
+                return $result;
+            }
+        }else{
+            return FALSE;
+        }
+    }
+    
+    /*
+     * Make sure the value is not empty
+     */
+    protected function get_value($value, $default){
+        if(empty($value)){
+            $value = $default;
+        }
+    }
+    
     /** 
     * Utitity function to throw an exception if an error occurs 
     * while running a mysql command. 

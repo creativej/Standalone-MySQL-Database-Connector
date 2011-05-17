@@ -19,11 +19,12 @@ Setup database:
 
 	require_once 'database.php';
 
-	$config['host'] 	= 'localhost';
+	//Feel free to put the config detail in a seperate file 
+	$config['host'] 		= 'localhost';
 	$config['useranme'] 	= 'admin';
 	$config['password'] 	= 'admin';
-	$config['database']	= 'database';
-
+	$config['database']		= 'database';
+	
 	$db = new Database($config);
 
 Get model
@@ -41,13 +42,48 @@ Get all products:
 	$order	= 'name asc';
 	$offset	= 0;
 	$limit	= 25;
+	
+	//Useful for pagination
 	$products = $products_model->all($order, $offset, $limit);
 	
-Get By fields
+Get By fields:
 	$products = $products_model->by_id(23);
 
 	foreach($products as $product){
 		echo $product->name.'<br/>';
 	}
+	
+	Another example
+	$products = $products_model->by_date_added_AND_category_id('2009-11-02', 2);
+	
+	More options - 
+	$products = $products_model->by_date_added_AND_category_id('2009-11-02', 2, $order, $limit, $offset);
+	
+Get first record by field:
+	$product = $products_model->first_by_id(23);
+	echo $product->name;	
+	
+	//You can use $model->first_by_{field#1}_AND_{field#2}(value#1, value#2)
+	$product = $products_model->first_by_id_AND_name(23, 'product');
+
+Easily extendable:
+	class Product_model extends Database{
+		$table_name = 'product';
+		
+		public function __construct($config){
+			parent::__contruct($config);
+		}
+	}
+	
+	$product_model = new Product_model($config);
+	$products = $product_model->all();
+	
+== More to come
+Use of OR statement for querying.
+Support complex queries
+Support databse other than MySQL
+INSERT, UPDATE, DELETE support
+
+		
 
 	

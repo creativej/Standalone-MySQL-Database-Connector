@@ -5,7 +5,8 @@ An abstract layer for database connection, and simple data querying.
 
 Note: I do not advise to use this for production purpose because there are many database class out there that can do more and better things than this class. 
 
-This is just a small experienment/excuse for myself to play around with the PHP magic method and mysqli. 
+This is just a small experienment/excuse for myself to play around with the PHP magic method. 
+Sometimes I just feel like reinventing the wheels. =] 
  
 == Features
 
@@ -53,10 +54,10 @@ Get By fields:
 		echo $product->name.'<br/>';
 	}
 	
-	Another example
+	//Another example
 	$products = $products_model->by_date_added_AND_category_id('2009-11-02', 2);
 	
-	More options - 
+	//More options
 	$products = $products_model->by_date_added_AND_category_id('2009-11-02', 2, $order, $limit, $offset);
 	
 Get first record by field:
@@ -79,7 +80,7 @@ Easily extendable:
 	$products = $product_model->all();
 	
 == More to come
-* Use of OR statement for querying.
+* Support the user of OR, LIKE statement for querying.
 * Support complex queries
 * Support databse other than MySQL
 * INSERT, UPDATE, DELETE support

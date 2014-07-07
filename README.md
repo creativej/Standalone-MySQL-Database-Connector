@@ -1,23 +1,23 @@
-= Standalone Database Connector
+# Standalone Database Connector
 
 An abstract layer for database connection, and simple data querying. 
 
 
-Note: I do not advise to use this for production purpose because there are many database class out there that can do more and better things than this class. 
+Note: I do not advise to use this for production purpose because there are many database class out there that can do more and better things. 
 
 This is just a small experienment/excuse for myself to play around with the PHP magic method. 
 Sometimes I just feel like reinventing the wheels. =] 
  
-== Features
+## Features
 
 * Standalone requires single file only
 * Converts all records into object for easy access e.g. product->name
 * Simplifies mysql query - e.g. $db->get_products->all()
 
-== Usage
+## Usage
 
 Setup database: 
-
+```
 	require_once 'database.php';
 
 	//Feel free to put the config detail in a seperate file 
@@ -27,12 +27,15 @@ Setup database:
 	$config['database']		= 'database';
 	
 	$db = new Database($config);
+```
 
 Get model
+```
 	//Name convention in getting products model: $db->get_{tablename}
 	$products_model = $db->get_products;
-
+```
 Get all products:
+```
 	$products = $products_model->all();
 
 	foreach($products as $product){
@@ -46,8 +49,9 @@ Get all products:
 	
 	//Useful for pagination
 	$products = $products_model->all($order, $offset, $limit);
-	
+```	
 Get By fields:
+```
 	$products = $products_model->by_id(23);
 
 	foreach($products as $product){
@@ -66,8 +70,9 @@ Get first record by field:
 	
 	//You can use $model->first_by_{field#1}_AND_{field#2}(value#1, value#2)
 	$product = $products_model->first_by_id_AND_name(23, 'product');
-
+```
 Easily extendable:
+```
 	class Product_model extends Database{
 		$table_name = 'product';
 		
@@ -78,8 +83,8 @@ Easily extendable:
 	
 	$product_model = new Product_model($config);
 	$products = $product_model->all();
-	
-== More to come
+```	
+## More to come
 * Support the user of OR, LIKE statement for querying.
 * Support complex queries
 * Support database other than MySQL

@@ -63,8 +63,9 @@ Get By fields:
 	
 	//More options
 	$products = $products_model->by_date_added_AND_category_id('2009-11-02', 2, $order, $limit, $offset);
-	
+```	
 Get first record by field:
+```
 	$product = $products_model->first_by_id(23);
 	echo $product->name;	
 	
